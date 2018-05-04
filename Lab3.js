@@ -61,11 +61,11 @@ function start(gl, canvas) {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     //Sanity Check!!
-    var vertices = [0.09, 0.5, 0.5, 0, 1, 0, 1,
-                    0.09, 0, 0.5,     0, 1, 0, 1,
-                    0.06, 0, 0,       0, 1, 0, 1,
-                    0.06, 0.5, 0,     0, 1, 0, 1]
-    drawSquare(vertices,gl)
+    //var vertices = [0.09, 0.5, 0.5, 0, 1, 0, 1,
+    //                0.09, 0, 0.5,     0, 1, 0, 1,
+    //                0.06, 0, 0,       0, 1, 0, 1,
+    //                0.06, 0.5, 0,     0, 1, 0, 1]
+    //drawSquare(vertices,gl)
     var point1 = [0,0]
     var point2 = [0,0.5]
     drawCylinder(point1, point2, gl, numSides, radius, 0)
@@ -521,6 +521,9 @@ function drawCylinder(point1, point2, gl, numSides, radius, index){
   setVertexBuffer(gl, vertices2)
   gl.drawElements(gl.LINE_STRIP, indices.length, gl.UNSIGNED_SHORT, 0);
 
+  console.log(arr)
+  console.log(arr2)
+
   connectSquares(arr, arr2, gl)
   var dist = Math.sqrt(Math.pow((point2[1]-point1[1]),2) + Math.pow((point2[0]-point1[0]),2))
   var tempVol = dist*area(numSides, radius)
@@ -571,7 +574,7 @@ function rotatePoint(arr, deg, point){
     var y = arr[i+1]
     rArr.push((x-a)*Math.cos(toRadians(deg)) - (y-b)*Math.sin(toRadians(deg))+a)
     rArr.push((x-a)*Math.sin(toRadians(deg)) + (y-b)*Math.cos(toRadians(deg))+b)
-    rArr.push(arr[i+1])
+    rArr.push(arr[i+2])
     rArr.push(0)
     rArr.push(1)
     rArr.push(0)
@@ -590,11 +593,9 @@ function toDegrees (angle) {
 
 function connectSquares(arr, arr2, gl){
   var sqArr = []
-  console.log(arr)
-  console.log(arr2)
   //Add i+0-i+6 of arr, Add i+0-i+13 of arr2, Add i+7-i+13 of arr
   var count = 0;
-  var index = 0;
+  var index = 6;
   for(i = 0; i+13 < arr.length; i+=14){
     sqArr = []
     var j = 0
@@ -623,7 +624,6 @@ function shading(norm, center){
 }
 
 function drawSquare(vertices, gl){
-  console.log(vertices)
   if(vertices.length != 28)
     return
   var arr = []
@@ -643,7 +643,6 @@ function drawSquare(vertices, gl){
   center.push((coordinate[0][2] + coordinate[1][2] + coordinate[2][2])/3)
 
   var n = findNormal(coordinate[0], coordinate[1], coordinate[2])
-  console.log(n)
   var center2 = [center[0]+n[0], center[1]+n[1], center[2]+n[2]]
   var ray = [center[0], center[1], center[2], 1, 0, 0, 1,
              center2[0], center2[1], center2[2], 1, 0, 0, 1]
