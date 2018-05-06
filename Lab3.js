@@ -61,19 +61,19 @@ function start(gl, canvas) {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     //Sanity Check!!
-    var vertices = [0.09, 0.5, 0.5, 0, 1, 0, 1,
-                    0.09, 0, 0.5,     0, 1, 0, 1,
-                    0.06, 0, 0,       0, 1, 0, 1,
-                    0.06, 0.5, 0,     0, 1, 0, 1]
-    drawSquare(vertices,gl)
+    //var vertices = [0.09, 0.5, 0.5, 0, 1, 0, 1,
+    //                0.09, 0, 0.5,     0, 1, 0, 1,
+    //                0.06, 0, 0,       0, 1, 0, 1,
+    //                0.06, 0.5, 0,     0, 1, 0, 1]
+    //drawSquare(vertices,gl)
     var point1 = [0,0]
-    var point2 = [0,0.5]
+    var point2 = [0.5,0.5]
     drawCylinder(point1, point2, gl, numSides, radius, 0)
     //Sanity Check!!
 
    //document.getElementById('shift').onclick = function(){ shiftCylinder(canvas, gl); };
-   //canvas.onmousedown = function(ev){ click(ev, gl, canvas); };
-   //canvas.onmousemove = function(ev){ move(ev, gl, canvas) }
+   canvas.onmousedown = function(ev){ click(ev, gl, canvas); };
+   canvas.onmousemove = function(ev){ move(ev, gl, canvas) }
 }
 
 function sliderChange(ev, gl){
@@ -571,7 +571,7 @@ function rotatePoint(arr, deg, point){
     var y = arr[i+1]
     rArr.push((x-a)*Math.cos(toRadians(deg)) - (y-b)*Math.sin(toRadians(deg))+a)
     rArr.push((x-a)*Math.sin(toRadians(deg)) + (y-b)*Math.cos(toRadians(deg))+b)
-    rArr.push(arr[i+1])
+    rArr.push(arr[i+2])
     rArr.push(0)
     rArr.push(1)
     rArr.push(0)
@@ -591,10 +591,11 @@ function toDegrees (angle) {
 function connectSquares(arr, arr2, gl){
   var sqArr = []
   console.log(arr)
-  console.log(arr2)
   //Add i+0-i+6 of arr, Add i+0-i+13 of arr2, Add i+7-i+13 of arr
+  //98/7 = 14 points
   var count = 0;
-  var index = 0;
+  var index = 2;
+  var squares = []
   for(i = 0; i+13 < arr.length; i+=14){
     sqArr = []
     var j = 0
@@ -604,11 +605,18 @@ function connectSquares(arr, arr2, gl){
       sqArr.push(arr2[i+j])
     for(j = 7; j<14; j++)
       sqArr.push(arr[i+j])
-    console.log("Square: "+count)
-    if(index == count)
-      drawSquare(sqArr, gl)
+    squares.push(sqArr)
+    //drawSquare(sqArr, gl)
     count++;
   }
+  console.log(squares)
+  drawSquare(squares[0], gl, 2)
+  drawSquare(squares[1], gl, 2)
+  drawSquare(squares[2], gl, 2)
+  drawSquare(squares[3], gl, 3)
+  drawSquare(squares[4], gl, 4)
+  drawSquare(squares[5], gl, 5)
+  drawSquare(squares[6], gl, 6)
 }
 
 function shading(norm, center){
@@ -618,12 +626,11 @@ function shading(norm, center){
   if(dotprod < 0)
     dotprod = 0
   var col = [0, 1*dotprod, 0, 1]
-  col = [0, 1, 0, 1]
+  //col = [0, 1, 0, 1]
   return col
 }
 
-function drawSquare(vertices, gl){
-  console.log(vertices)
+function drawSquare(vertices, gl, index){
   if(vertices.length != 28)
     return
   var arr = []
@@ -638,12 +645,11 @@ function drawSquare(vertices, gl){
   }
 
   var center = []
-  center.push((coordinate[0][0] + coordinate[1][0] + coordinate[2][0])/3)
-  center.push((coordinate[0][1] + coordinate[1][1] + coordinate[2][1])/3)
-  center.push((coordinate[0][2] + coordinate[1][2] + coordinate[2][2])/3)
+  center.push((coordinate[0][0] + coordinate[1][0] + coordinate[2][0] +index/70)/3)
+  center.push((coordinate[0][1] + coordinate[1][1] + coordinate[2][1] +index/70)/3)
+  center.push((coordinate[0][2] + coordinate[1][2] + coordinate[2][2] +index/70)/3)
 
   var n = findNormal(coordinate[0], coordinate[1], coordinate[2])
-  console.log(n)
   var center2 = [center[0]+n[0], center[1]+n[1], center[2]+n[2]]
   var ray = [center[0], center[1], center[2], 1, 0, 0, 1,
              center2[0], center2[1], center2[2], 1, 0, 0, 1]
