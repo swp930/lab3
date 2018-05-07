@@ -90,18 +90,6 @@ function drawNormals(ev, gl){
   drawCylinderLines(gl)
 }
 
-function sliderChange(ev, gl){
-  gl.clearColor(0, 0, 0, 1);
-  // clear <canvas>
-  gl.clear(gl.COLOR_BUFFER_BIT);
-  percent = ev.value/100.0
-  var vertices = [-0.5, 0.5, 0.5, 0, 1, 0, 1,
-                  0, 0, 0.5,     0, 1, 0, 1,
-                  0.5, 0, 0,       0, 1, 0, 1,
-                  0, 0.5, 0,     0, 1, 0, 1]
- drawSquare(vertices, gl)
-}
-
 function shiftCylinder(canvas, gl){
    var i = 0
    for(i = 0; i+6 < g_points.length; i+=7){
