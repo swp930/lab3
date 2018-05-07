@@ -4,14 +4,15 @@ var FSHADER_SOURCE = null; // fragment shader program
 
 var g_points = []; // array of mouse presses
 var open = false
-var numSides = 14
+var numSides = 10
 var radius = 0.1
 var volume = 0
 var surfaceArea = 0
 var cylinderInd = 0
 var percent = 0.4;
+var showNormals = false
 
-var l = [1,1,1]
+var light = [1,1,1]
 var icol = [1,1,1]
 
 var first1 = true
@@ -66,14 +67,27 @@ function start(gl, canvas) {
     //                0.06, 0, 0,       0, 1, 0, 1,
     //                0.06, 0.5, 0,     0, 1, 0, 1]
     //drawSquare(vertices,gl)
-    var point1 = [0,0]
+    var point1 = [-0.5,0.5]
     var point2 = [0.5,0.5]
-    drawCylinder(point1, point2, gl, numSides, radius, 0)
+    var point3 = [-0.5,-0.5]
+    //drawCylinder(point1, point2, gl, numSides, radius, 0)
+    //drawCylinder(point3, point2, gl, numSides, radius, 0)
     //Sanity Check!!
 
-   //document.getElementById('shift').onclick = function(){ shiftCylinder(canvas, gl); };
+   document.getElementById('shift').onclick = function(){ shiftCylinder(canvas, gl); };
+   document.getElementById('shiftLightLeft').onclick = function(){ shiftLight(canvas, gl, -1); };
+   document.getElementById('shiftLightRight').onclick = function(){ shiftLight(canvas, gl, 1); };
+   document.getElementById('normal').onclick = function(ev){ drawNormals(ev, gl)}
    canvas.onmousedown = function(ev){ click(ev, gl, canvas); };
    canvas.onmousemove = function(ev){ move(ev, gl, canvas) }
+}
+
+function drawNormals(ev, gl){
+  if(ev.target.checked)
+    showNormals = true
+  else
+    showNormals = false
+  drawCylinderLines(gl)
 }
 
 function sliderChange(ev, gl){
@@ -89,12 +103,16 @@ function sliderChange(ev, gl){
 }
 
 function shiftCylinder(canvas, gl){
-   console.log(g_points)
    var i = 0
    for(i = 0; i+6 < g_points.length; i+=7){
      g_points[i] += 0.01
    }
    drawCylinderLines(gl)
+}
+
+function shiftLight(canvas, gl, dir){
+  light = [light[0]+dir*0.1, light[1], light[2]]
+  drawCylinderLines(gl)
 }
 
 function findNormal(a, b, c, gl){
@@ -120,48 +138,6 @@ function normalize(v1){
   var dist = Math.sqrt(Math.pow(v1[0], 2) + Math.pow(v1[1], 2) + Math.pow(v1[2], 2))
   var n = [v1[0]/dist, v1[1]/dist, v1[2]/dist]
   return n
-}
-
-function drawNormal(vertices, gl) {
-  var i = 0
-  var point = 1
-  var points = []
-  for(i = 0; i+6 < vertices.length; i+=7){
-    var point = {x:0, y:0, z:0}
-    var j = 0
-    point.x = vertices[i]
-    point.y = vertices[i+1]
-    point.z = vertices[i+2]
-    points.push(point)
-    point++
-  }
-  var v1 = [points[1].x - points[0].x, points[1].y - points[0].y, points[1].z - points[0].z]
-  var v2 = [points[2].x - points[0].x, points[2].y - points[0].y, points[2].z - points[0].z]
-  var n = [(v1[1]*v2[2] - v1[2]*v2[1]), -(v1[0]*v2[2] - v1[2]*v2[0]), (v1[0]*v2[1] - v1[1]*v2[0])]
-  var dist = Math.sqrt(Math.pow(n[0], 2) + Math.pow(n[1], 2) + Math.pow(n[2],2))
-  n = [n[0]/dist, n[1]/dist, n[2]/dist]
-  var ogN = n
-
-  n = [0.15*n[0], 0.15*n[1], 0.15*n[2]]
-  var center = [(points[0].x + points[1].x + points[2].x)/3, (points[0].y + points[1].y + points[2].y)/3, (points[0].z + points[1].z + points[2].z)/3]
-  var ray = [center[0]+n[0], center[1]+n[1], center[2]+n[2]]
-  var color = [1, 0, 0, 1]
-  var vertices = []
-  i = 0
-  for(i = 0; i < center.length; i++)
-    vertices.push(center[i])
-  for(i = 0; i < color.length; i++)
-    vertices.push(color[i])
-  for(i = 0; i < ray.length; i++)
-    vertices.push(ray[i])
-  for(i = 0; i < color.length; i++)
-    vertices.push(color[i])
-  console.log(vertices)
-  var ind = [0,1]
-  setVertexBuffer(gl, new Float32Array(vertices));
-  setIndexBuffer(gl, new Uint16Array(ind));
-  gl.drawElements(gl.LINES, ind.length, gl.UNSIGNED_SHORT, 0)
-  return ogN
 }
 
 // initialize vertex buffer
@@ -492,6 +468,7 @@ function drawCylinderLines(gl){
 }
 
 function drawCylinder(point1, point2, gl, numSides, radius, index){
+  var centerCylinder = [(point1[0]+point2[0])/2, (point1[1]+point2[1])/2]
   var arr = getCirclePoint(point1, numSides, radius)
   var k = 0
   var newArray = []
@@ -513,15 +490,13 @@ function drawCylinder(point1, point2, gl, numSides, radius, index){
   indiceArr.push(0)
   var indices = new Int16Array(indiceArr)
 
-  setIndexBuffer(gl, indices);
+  //setIndexBuffer(gl, indices);
+  //setVertexBuffer(gl, vertices)
+  //gl.drawElements(gl.LINE_STRIP, indices.length, gl.UNSIGNED_SHORT, 0);
+  //setVertexBuffer(gl, vertices2)
+  //gl.drawElements(gl.LINE_STRIP, indices.length, gl.UNSIGNED_SHORT, 0);
 
-  setVertexBuffer(gl, vertices)
-  gl.drawElements(gl.LINE_STRIP, indices.length, gl.UNSIGNED_SHORT, 0);
-
-  setVertexBuffer(gl, vertices2)
-  gl.drawElements(gl.LINE_STRIP, indices.length, gl.UNSIGNED_SHORT, 0);
-
-  connectSquares(arr, arr2, gl)
+  connectSquares(arr, arr2, gl, centerCylinder)
   var dist = Math.sqrt(Math.pow((point2[1]-point1[1]),2) + Math.pow((point2[0]-point1[0]),2))
   var tempVol = dist*area(numSides, radius)
   var deg = 360/numSides
@@ -588,9 +563,63 @@ function toDegrees (angle) {
   return angle * (180 / Math.PI)
 }
 
-function connectSquares(arr, arr2, gl){
+function connectSquares(arr, arr2, gl, centerCylinder){
+  var points = []
+  var points2 = []
+  var a = 0
+  for(a = 0; a+6 < arr.length; a+=7){
+      var point = []
+      var point2 = []
+      var b = a
+      for(b = a; b <= a+6; b++){
+            point.push(arr[b])
+            point2.push(arr2[b])
+      }
+      points.push(point)
+      points2.push(point2)
+  }
+
+  var squares2 = []
+
+  var last = []
+  var last2 = []
+  for(a = 0; a < points.length; a++){
+    if(last.length == 0){
+      last = points[a]
+      last2 = points2[a]
+    } else {
+      var sqArr = []
+      var c = 0
+      for(c = 0; c < last.length; c++)
+        sqArr.push(last[c])
+      for(c = 0; c < last2.length; c++)
+        sqArr.push(last2[c])
+      for(c = 0; c < points2[a].length; c++)
+        sqArr.push(points2[a][c])
+      for(c = 0; c < points[a].length; c++)
+        sqArr.push(points[a][c])
+      squares2.push(sqArr)
+      last = points[a]
+      last2 = points2[a]
+    }
+  }
+  var p1 = points[points.length-1]
+  var p2 = points2[points2.length-1]
+  var p3 = points2[0]
+  var p4 = points[0]
+  var lastPoint = [p1, p2, p3, p4]
+
+  var d = 0
   var sqArr = []
-  console.log(arr)
+  for(d = 0; d < lastPoint.length; d++){
+    var e = 0
+    for(e = 0; e < lastPoint[d].length; e++){
+      sqArr.push(lastPoint[d][e])
+    }
+  }
+  squares2.push(sqArr)
+
+  sqArr = []
   //Add i+0-i+6 of arr, Add i+0-i+13 of arr2, Add i+7-i+13 of arr
   //98/7 = 14 points
   var count = 0;
@@ -609,28 +638,24 @@ function connectSquares(arr, arr2, gl){
     //drawSquare(sqArr, gl)
     count++;
   }
-  console.log(squares)
-  drawSquare(squares[0], gl, 2)
-  drawSquare(squares[1], gl, 2)
-  drawSquare(squares[2], gl, 2)
-  drawSquare(squares[3], gl, 3)
-  drawSquare(squares[4], gl, 4)
-  drawSquare(squares[5], gl, 5)
-  drawSquare(squares[6], gl, 6)
+  var r = 0
+  //13 12 11 3 2 1 0
+  for(r = squares2.length-1; r >= 0; r--)
+    drawSquare(squares2[r], gl, r, centerCylinder)
+  //drawSquare(squares2[0], gl, centerCylinder)
 }
 
 function shading(norm, center){
-  var vlt = [1, 1, 1]
+  var vlt = light
   var vlt = normalize(vlt)
   var dotprod = norm[0]*vlt[0] + norm[1]*vlt[1] + norm[2]*vlt[2]
   if(dotprod < 0)
     dotprod = 0
   var col = [0, 1*dotprod, 0, 1]
-  //col = [0, 1, 0, 1]
   return col
 }
 
-function drawSquare(vertices, gl, index){
+function drawSquare(vertices, gl, index, centerCylinder){
   if(vertices.length != 28)
     return
   var arr = []
@@ -645,18 +670,33 @@ function drawSquare(vertices, gl, index){
   }
 
   var center = []
-  center.push((coordinate[0][0] + coordinate[1][0] + coordinate[2][0] +index/70)/3)
-  center.push((coordinate[0][1] + coordinate[1][1] + coordinate[2][1] +index/70)/3)
-  center.push((coordinate[0][2] + coordinate[1][2] + coordinate[2][2] +index/70)/3)
+  center.push((coordinate[0][0] + coordinate[3][0])/2)
+  center.push((coordinate[0][1] + coordinate[3][1])/2)
+  center.push((coordinate[0][2] + coordinate[3][2])/2)
+
+  var centerOpposite = []
+  centerOpposite.push((coordinate[1][0] + coordinate[2][0])/2)
+  centerOpposite.push((coordinate[1][1] + coordinate[2][1])/2)
+  centerOpposite.push((coordinate[1][2] + coordinate[2][2])/2)
+
+  var vectorLine = [centerOpposite[0] - center[0], centerOpposite[1] - center[1], centerOpposite[2] - center[2]]
+  //var midPoint = [(center[0]+centerOpposite[0])/2, (center[1]+centerOpposite[1])/2, (center[2]+centerOpposite[2])/2]
+  var pos = (index+1)/numSides
+  var midPoint = [center[0]+pos*vectorLine[0], center[1]+pos*vectorLine[1], center[2]+pos*vectorLine[2]]
+  center = midPoint
+  console.log(center)
+  console.log(centerOpposite)
 
   var n = findNormal(coordinate[0], coordinate[1], coordinate[2])
+  var ind2 = [0,1]
+  var vectorCenter = [centerCylinder[0]-center[0], centerCylinder[1]-center[1], 0-center[2]]
+  var dotprod = n[0]*vectorCenter[0] + n[1]*vectorCenter[1] + n[2]*vectorCenter[2]
+  if(dotprod > 0)
+   n = [-n[0], -n[1], -n[2]]
+  var col = shading(n, center)
   var center2 = [center[0]+n[0], center[1]+n[1], center[2]+n[2]]
   var ray = [center[0], center[1], center[2], 1, 0, 0, 1,
              center2[0], center2[1], center2[2], 1, 0, 0, 1]
-  var ind2 = [0,1]
-
-  var col = shading(n, center)
-
   for(i = 0; i+6 < vertices.length; i+=7) {
     arr.push(vertices[i])
     arr.push(vertices[i+1])
@@ -668,13 +708,17 @@ function drawSquare(vertices, gl, index){
   }
   var ind = [0,1,2,
              3,0,2]
-  setVertexBuffer(gl, new Float32Array(arr));
-  setIndexBuffer(gl, new Uint16Array(ind));
-  gl.drawElements(gl.TRIANGLES, ind.length, gl.UNSIGNED_SHORT, 0);
+  if(col != [0,0,0]){
+    setVertexBuffer(gl, new Float32Array(arr));
+    setIndexBuffer(gl, new Uint16Array(ind));
+    gl.drawElements(gl.TRIANGLES, ind.length, gl.UNSIGNED_SHORT, 0);
+  }
 
-  setVertexBuffer(gl, new Float32Array(ray));
-  setIndexBuffer(gl, new Uint16Array(ind2));
-  gl.drawElements(gl.LINES, ind2.length, gl.UNSIGNED_SHORT, 0)
+  if(showNormals){
+    setVertexBuffer(gl, new Float32Array(ray));
+    setIndexBuffer(gl, new Uint16Array(ind2));
+    gl.drawElements(gl.LINES, ind2.length, gl.UNSIGNED_SHORT, 0)
+  }
 }
 
 /*
